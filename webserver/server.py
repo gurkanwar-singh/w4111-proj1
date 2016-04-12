@@ -147,6 +147,55 @@ def search():
 	
 	return render_template("index.html", **context)	
 
+@app.route('/sort')
+def sort():	
+	
+	print request.args
+	
+	attr1 = request.args["attr1"]
+	attr2 = request.args["attr2"]
+	attr3 = request.args["attr3"]
+
+	sortby = text("(%s*1.0) + (%s*0.8) + (%s*0.6)" % (attr1,attr2,attr3))
+
+	if request.args["min_overall"] == '':
+		min_overall = 0
+	else:
+		min_overall = request.args["min_overall"]
+	
+	if request.args["max_overall"] == '':
+		max_overall = 99
+	else:
+		max_overall = request.args["max_overall"]
+
+	if request.args["position"] == 'null':
+		position = text("ANY(ARRAY['GK','CB','LB','RB','CDM','CM','CAM','LM','RM','LW','RW','CF','ST'])")
+	elif request.args["position"] == 'DEF':
+		position = text("ANY(ARRAY['CB','LB','RB'])")
+	elif request.args["position"] == 'MID':
+		position = text("ANY(ARRAY['CDM','CM','CAM','LM','RM'])")
+	elif request.args["position"] == 'ATT':
+		position = text("ANY(ARRAY['LW','RW','CF','ST'])")
+	else:
+		position = text("'%s'"%request.args["position"])
+
+	# Get table data
+	query = text("SELECT p.pname, p.position, p.overall, p.passing, p.pace, p.dribbling, p.shooting, p.defense, p.physical FROM players p WHERE p.overall >= %s AND p.overall <= %s AND p.position = %s ORDER BY %s DESC" % (min_overall, max_overall, position, sortby))
+	print query
+	cursor = g.conn.execute(query)
+	table_data = []
+	for row in cursor:
+		table_data.append(row)
+	cursor.close()
+
+	#data_to_send = table_data[(page-1)*50:(page*50)+1]
+	data_to_send = table_data
+	
+	context = dict(data = data_to_send)
+	
+	return render_template("sortbot.html", **context)	
+
+
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])
 def add():

@@ -8,20 +8,83 @@
 
 
 <body>
-  <h1>FIFA Database</h1>
-  <div>{{data}}</div>
+	<div>
 
-  <div>
-    {% for n in data %}
-    <div>{{n}}</div>
-    {% endfor %}
-  </div>
+		<div style="width=100%;text-align:center"><h1>FIFA Players Database</h1></div>
+		<div style="width=100%">
+			<h3><a href='/'>Database Search</a></h3>
+			<h3><a href='/sortbot'>Sortbot</a></h3>
+		</div>
 
-<p><a href="another">Go to the other page</a></p>
+		<form method="GET" action="/search">
+			<div> Search by name: <input type="text" name="name"> <input type="submit" value="Search"></div>
+			<h3>Options: (leave blank if not desired) </h3>
+			<div> Sort by: 
+				<select name="sortby">
+					<option value="3">Overall</option> 
+					<option value="1">Name</option>
+					<option value="4">Passing</option>
+					<option value="5">Pace</option>
+					<option value="6">Dribbling</option>
+					<option value="7">Shooting</option>
+					<option value="8">Defense</option>
+					<option value="9">Physical</option>
+				</select>
+				<select name="order">
+					<option value="DESC">Descending</option>
+					<option value="ASC">Ascending</option>
+				</select>
+			</div>
+			<div> Minimum overall: <input type="text" name="min_overall"> </div>
+			<div> Maximum overall: <input type="text" name="max_overall"> </div>		
+			<div> Position:	
+				<select name="position">
+					<option value="null"></option> 
+					<option value="DEF">Defender (CB, LB, RB)</option>
+					<option value="MID">Midfielder (CDM, CM, CAM, LM, RM)</option>
+					<option value="ATT">Attacker (LW, RW, CF, ST)</option>
+					<option value="GK">GK</option>
+					<option value="CB">CB</option>
+					<option value="LB">LB</option>
+					<option value="RB">RB</option>
+					<option value="CDM">CDM</option>
+					<option value="CM">CM</option>
+					<option value="CAM">CAM</option>
+					<option value="LM">LM</option>
+					<option value="RM">RM</option>
+					<option value="LW">LW</option>
+					<option value="RW">RW</option>
+					<option value="CF">CF</option>
+					<option value="ST">ST</option>	
+				</select>
+			</div>
+		</form>
+	</div>
+	
+	<div>
 
-<form method="POST" action="/add">
-<p>Name of new computer scientist: <input type="text" name="name"> <input type="submit" value="Add"></p>
-</form>
+		<table width="100%">
+			<tr style="font-weight:bold;">
+				<td>Name</td>
+				<td>Position</td>
+				<td>Overall</td>
+				<td>Passing</td>
+				<td>Pace</td>
+				<td>Dribbling</td>
+				<td>Shooting</td>
+				<td>Defense</td>
+				<td>Physical</td>
+			<tr> 
+    			{% for t in data %}
+			<tr>
+				{% for i in t %}
+					<td>{{i}}</td>
+				{% endfor %}
+			</tr>
+    			{% endfor %}
+  		</table>
+	</div>
+
 
 </body>
 
