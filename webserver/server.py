@@ -81,8 +81,7 @@ def teardown_request(exception):
     pass
 
 @app.route('/')
-@app.route('/players')
-def players():
+def index():
 	
 	print request.args
 
@@ -96,7 +95,7 @@ def players():
 			page = 1
 
 	# Get table data
-	cursor = g.conn.execute("SELECT * FROM players")
+	cursor = g.conn.execute("SELECT p.pname, p.position, p.overall, p.passing, p.pace, p.dribbling, p.shooting, p.defense, p.physical FROM players p ORDER BY 3 DESC")
 	table_data = []
 	for row in cursor:
 		table_data.append(row)  # can also be accessed using result[0]
@@ -106,7 +105,7 @@ def players():
 
 	context = dict(data = data_to_send)
 	
-	return render_template("players.html", **context)	
+	return render_template("index.html", **context)	
 
 @app.route('/chemistry')
 def chemistry():
@@ -116,7 +115,49 @@ def chemistry():
 def sortbot():
 	return render_template("sortbot.html")
 
+@app.route('/search')
+def search():	
+	
+	print request.args
 
+	# Pagination
+	if "page" not in request.args:
+		page = 1
+	else:
+		if int(request.args["page"]) > 0:
+			page = int(request.args["page"])	
+		else:
+			page = 1
+
+	if request.args["min_overall"] == '':
+		min_overall = 0
+	else:
+		min_overall = request.args["min_overall"]
+	
+	if request.args["max_overall"] == '':
+		max_overall = 99
+	else:
+		max_overall = request.args["max_overall"]
+
+	if request.args["position"] == 'null':
+		position = text("ANY(ARRAY['GK','CB','LB','RB','CDM','CM','CAM','LM','RM','LW','RW','CF','ST'])")
+	else:
+		position = text("'%s'"%request.args["position"])
+
+	# Get table data
+	query = text("SELECT p.pname, p.position, p.overall, p.passing, p.pace, p.dribbling, p.shooting, p.defense, p.physical FROM players p WHERE p.overall >= %s AND p.overall <= %s AND p.position = %s AND p.pname ILIKE '%%%s%%' ORDER BY 3 DESC" % (min_overall, max_overall, position, request.args['name']))
+	print query
+	cursor = g.conn.execute(query)
+	table_data = []
+	for row in cursor:
+		table_data.append(row)
+	cursor.close()
+
+	data_to_send = table_data[(page-1)*50:(page*50)+1]
+
+	context = dict(data = data_to_send)
+	
+	return render_template("index.html", **context)	
 
 # Example of adding new data to the database
 @app.route('/add', methods=['POST'])

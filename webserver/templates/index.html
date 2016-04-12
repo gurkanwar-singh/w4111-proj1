@@ -1,0 +1,74 @@
+<html>
+  <style>
+    body{ 
+      font-size: 15pt;
+      font-family: arial;
+    }
+  </style>
+
+
+<body>
+	<div>
+  		<h1><a href="/">FIFA Database</a></h1>
+
+		<form method="GET" action="/search">
+			<div> Search by name: <input type="text" name="name"> <input type="submit" value="Search"></div>
+			<h3>Filters: (leave blank if not desired) </h3>
+			<div> Minimum overall: <input type="text" name="min_overall"> </div>
+			<div> Maximum overall: <input type="text" name="max_overall"> </div>		
+			<div> Position:	
+				<select name="position">
+					<option value="null"></option> 
+					<option value="GK">GK</option>
+					<option value="CB">CB</option>
+					<option value="LB">LB</option>
+					<option value="RB">RB</option>
+					<option value="CDM">CDM</option>
+					<option value="CM">CM</option>
+					<option value="CAM">CAM</option>
+					<option value="LM">LM</option>
+					<option value="RM">RM</option>
+					<option value="LW">LW</option>
+					<option value="RW">RW</option>
+					<option value="CF">CF</option>
+					<option value="ST">ST</option>	
+				</select>
+			</div>
+		</form>
+	</div>
+	
+	<div>
+
+		<table width="100%">
+			<tr style="font-weight:bold;">
+				<td>Name</td>
+				<td>Position</td>
+				<td>Overall</td>
+				<td>Passing</td>
+				<td>Pace</td>
+				<td>Dribbling</td>
+				<td>Shooting</td>
+				<td>Defense</td>
+				<td>Physical</td>
+			<tr> 
+    			{% for t in data %}
+			<tr>
+				{% for i in t %}
+					<td>{{i}}</td>
+				{% endfor %}
+			</tr>
+    			{% endfor %}
+  		</table>
+	</div>
+
+<p><a href="chemistry">Go to chemistry tool</a></p>
+<p><a href="sortbot">Go to sortbot</a></p>
+
+<!-- <form method="POST" action="/add">
+<p>Name of new computer scientist: <input type="text" name="name"> <input type="submit" value="Add"></p>
+</form>-->
+
+</body>
+
+
+</html>
