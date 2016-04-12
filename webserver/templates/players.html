@@ -8,16 +8,20 @@
 
 
 <body>
-  <h1>Some famous Computer Scientists</h1>
-  <div>{{data}}</div>
+  <h1>FIFA Database</h1>
 
-  <div>
-    {% for n in data %}
-    <div>{{n}}</div>
+  <table>
+    {% for t in data %}
+	<tr>
+		{% for i in t %}
+			<td>{{i}}</td>
+		{% endfor %}
+	</tr>
     {% endfor %}
-  </div>
+  </table>
 
-<p><a href="another">Go to the other page</a></p>
+<p><a href="chemistry">Go to chemistry tool</a></p>
+<p><a href="sortbot">Go to sortbot</a></p>
 
 <form method="POST" action="/add">
 <p>Name of new computer scientist: <input type="text" name="name"> <input type="submit" value="Add"></p>
