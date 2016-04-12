@@ -82,30 +82,7 @@ def teardown_request(exception):
 
 @app.route('/')
 def index():
-	
-	print request.args
-
-	# Pagination
-	if "page" not in request.args:
-		page = 1
-	else:
-		if int(request.args["page"]) > 0:
-			page = int(request.args["page"])	
-		else:
-			page = 1
-
-	# Get table data
-	cursor = g.conn.execute("SELECT p.pname, p.position, p.overall, p.passing, p.pace, p.dribbling, p.shooting, p.defense, p.physical FROM players p ORDER BY 3 DESC")
-	table_data = []
-	for row in cursor:
-		table_data.append(row)  # can also be accessed using result[0]
-	cursor.close()
-
-	data_to_send = table_data[(page-1)*50:(page*50)+1]
-
-	context = dict(data = data_to_send)
-	
-	return render_template("index.html", **context)	
+	return render_template("index.html")	
 
 @app.route('/chemistry')
 def chemistry():
@@ -129,6 +106,10 @@ def search():
 		else:
 			page = 1
 
+	sortby = request.args["sortby"]
+
+	order = request.args["order"]
+
 	if request.args["min_overall"] == '':
 		min_overall = 0
 	else:
@@ -141,11 +122,17 @@ def search():
 
 	if request.args["position"] == 'null':
 		position = text("ANY(ARRAY['GK','CB','LB','RB','CDM','CM','CAM','LM','RM','LW','RW','CF','ST'])")
+	elif request.args["position"] == 'DEF':
+		position = text("ANY(ARRAY['CB','LB','RB'])")
+	elif request.args["position"] == 'MID':
+		position = text("ANY(ARRAY['CDM','CM','CAM','LM','RM'])")
+	elif request.args["position"] == 'ATT':
+		position = text("ANY(ARRAY['LW','RW','CF','ST'])")
 	else:
 		position = text("'%s'"%request.args["position"])
 
 	# Get table data
-	query = text("SELECT p.pname, p.position, p.overall, p.passing, p.pace, p.dribbling, p.shooting, p.defense, p.physical FROM players p WHERE p.overall >= %s AND p.overall <= %s AND p.position = %s AND p.pname ILIKE '%%%s%%' ORDER BY 3 DESC" % (min_overall, max_overall, position, request.args['name']))
+	query = text("SELECT p.pname, p.position, p.overall, p.passing, p.pace, p.dribbling, p.shooting, p.defense, p.physical FROM players p WHERE p.overall >= %s AND p.overall <= %s AND p.position = %s AND p.pname ILIKE '%%%s%%' ORDER BY %s %s" % (min_overall, max_overall, position, request.args['name'], sortby, order))
 	print query
 	cursor = g.conn.execute(query)
 	table_data = []
@@ -153,8 +140,9 @@ def search():
 		table_data.append(row)
 	cursor.close()
 
-	data_to_send = table_data[(page-1)*50:(page*50)+1]
-
+	#data_to_send = table_data[(page-1)*50:(page*50)+1]
+	data_to_send = table_data
+	
 	context = dict(data = data_to_send)
 	
 	return render_template("index.html", **context)	
