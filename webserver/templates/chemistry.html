@@ -16,66 +16,34 @@
 			<h3><a href='/sortbot'>Sortbot</a></h3>
 		</div>
 
-		<form method="GET" action="/search">
-			<div> Search by name: <input type="text" name="name"> <input type="submit" value="Search"></div>
-			<h3>Options: (leave blank if not desired) </h3>
-			<div> Sort by: 
-				<select name="sortby">
-					<option value="3">Overall</option> 
-					<option value="1">Name</option>
-					<option value="4">Passing</option>
-					<option value="5">Pace</option>
-					<option value="6">Dribbling</option>
-					<option value="7">Shooting</option>
-					<option value="8">Defense</option>
-					<option value="9">Physical</option>
-				</select>
-				<select name="order">
-					<option value="DESC">Descending</option>
-					<option value="ASC">Ascending</option>
-				</select>
-			</div>
-			<div> Minimum overall: <input type="text" name="min_overall"> </div>
-			<div> Maximum overall: <input type="text" name="max_overall"> </div>		
-			<div> Position:	
-				<select name="position">
-					<option value="null"></option> 
-					<option value="DEF">Defender (CB, LB, RB)</option>
-					<option value="MID">Midfielder (CDM, CM, CAM, LM, RM)</option>
-					<option value="ATT">Attacker (LW, RW, CF, ST)</option>
-					<option value="GK">GK</option>
-					<option value="CB">CB</option>
-					<option value="LB">LB</option>
-					<option value="RB">RB</option>
-					<option value="CDM">CDM</option>
-					<option value="CM">CM</option>
-					<option value="CAM">CAM</option>
-					<option value="LM">LM</option>
-					<option value="RM">RM</option>
-					<option value="LW">LW</option>
-					<option value="RW">RW</option>
-					<option value="CF">CF</option>
-					<option value="ST">ST</option>	
-				</select>
-			</div>
+		<form method="GET" action="/compute_chemistry">
+			<div> LB: <input type="text" name="LB"> </div>
+			<div> CB: <input type="text" name="CB1"> </div>
+			<div> CB: <input type="text" name="CB2"> </div>
+			<div> RB: <input type="text" name="RB"> </div>
+			<div> CDM: <input type="text" name="CDM"> </div>
+			<div> CM: <input type="text" name="CM1"> </div>
+			<div> CM: <input type="text" name="CM2"> </div>
+			<div> LW: <input type="text" name="LW"> </div>
+			<div> RW: <input type="text" name="RW"> </div>
+			<div> ST: <input type="text" name="ST"> </div>
+			<div> <input type="submit" value="Submit"></div>
 		</form>
 	</div>
 	
 	<div>
-
+		<h2>Team Chemistry: {{data[1]}}</h2>
 		<table width="100%">
 			<tr style="font-weight:bold;">
 				<td>Name</td>
 				<td>Position</td>
-				<td>Overall</td>
-				<td>Passing</td>
-				<td>Pace</td>
-				<td>Dribbling</td>
-				<td>Shooting</td>
-				<td>Defense</td>
-				<td>Physical</td>
+				<td>Preferred Position</td>
+				<td>Club</td>
+				<td>League</td>
+				<td>Nationality</td>
+				<td>Chemistry</td>
 			<tr> 
-    			{% for t in data %}
+    			{% for t in data[0] %}
 			<tr>
 				{% for i in t %}
 					<td>{{i}}</td>

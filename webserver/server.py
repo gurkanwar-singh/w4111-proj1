@@ -86,7 +86,202 @@ def index():
 
 @app.route('/chemistry')
 def chemistry():
-	return render_template("chemistry.html")
+	data_to_send = ["",0]
+
+	context = dict(data = data_to_send)
+	
+	return render_template("chemistry.html", **context)	
+
+@app.route('/compute_chemistry')
+def compute_chemistry():
+	
+	print request.args
+
+	positions = {}
+
+	positions['lb'] = request.args["LB"]
+	positions['cb1'] = request.args["CB1"]
+	positions['cb2'] = request.args["CB2"]		
+	positions['rb'] = request.args["RB"]	
+	positions['cdm'] = request.args["CDM"]
+	positions['cm1'] = request.args["CM1"]
+	positions['cm2'] = request.args["CM2"]
+	positions['lw'] = request.args["LW"]
+	positions['rw'] = request.args["RW"]
+	positions['st'] = request.args["ST"]
+
+	queried_players = []
+	
+	team_chemistry = 0
+	
+	for position in positions:
+		query = text("SELECT p.pid, p.pname, p.position, p.overall FROM players p WHERE p.pname ILIKE '%%%s%%' AND p.overall = (SELECT MAX(p2.overall) FROM players p2 WHERE p2.pname ILIKE '%%%s%%')" % (positions[position], positions[position]))
+	
+		cursor = g.conn.execute(query)
+
+		result = ''
+		
+		for item in cursor:
+			result = item
+
+		cursor.close()
+	
+		pid = result[0]	
+		name = result[1]
+		assigned_position = position
+		player_preferred_position = result[2]
+
+		query = text("SELECT plays.tid FROM plays_for plays WHERE plays.pid = %s" % pid)
+
+		cursor = g.conn.execute(query)
+	
+		club_id = ''
+		nation_id = ''
+	
+		for item in cursor:
+			if item[0] <= 228:
+				club_id = item[0]
+			else:
+				nation_id = item[0]
+
+		cursor.close()
+
+		club = ''
+		league = ''
+		nation = ''
+	
+		query = text("SELECT c.clubname, c.lname FROM clubs c WHERE c.tid = %s" % club_id)
+	
+		cursor = g.conn.execute(query)
+
+		for item in cursor:
+			club = item[0]
+			league = item[1]
+
+		cursor.close()
+
+		query = text("SELECT n.nname FROM national_teams n WHERE n.tid = %s" % nation_id)
+
+		cursor = g.conn.execute(query)
+
+		for item in cursor:
+			nation = item[0]
+			
+		cursor.close()
+
+		chemistry = 0
+	
+		if assigned_position == "lb":
+			if player_preferred_position == "LB":
+				chemistry = 5
+			elif player_preferred_position == "RB":
+				chemistry = 4
+			elif player_preferred_position == "CB":
+				chemistry = 2
+			else:
+				chemistry = 0	
+			assigned_position = "LB"
+		elif assigned_position == "cb1" or assigned_position == "cb2":
+			if player_preferred_position == "CB":
+				chemistry = 5
+			elif player_preferred_position == "RB" or player_preferred_position == "LB":
+				chemistry = 3
+			else:
+				chemistry = 0
+			assigned_position = "CB"
+		elif assigned_position == "rb":
+			if player_preferred_position == "RB":
+				chemistry = 5
+			elif player_preferred_position == "LB":
+				chemistry = 4
+			elif player_preferred_position == "CB":
+				chemistry= 2	
+			else:
+				chemistry = 0
+			assigned_position = "RB"
+		elif assigned_position == "cdm":
+			if player_preferred_position == "CDM":
+				chemistry = 5
+			elif player_preferred_position == "CM":
+				chemistry = 4
+			else:
+				chemistry = 0
+			assigned_position = "CDM"
+		elif assigned_position == "cm1" or assigned_position == "cm2":
+			if player_preferred_position == "CM":
+				chemistry = 5
+			elif player_preferred_position == "CDM":
+				chemistry = 4
+			elif player_preferred_position == "CAM" or player_preferred_position == "RM" or player_preferred_position == "LM":
+				chemistry = 3
+			else:
+				chemistry = 0
+			assigned_position = "CM"
+		elif assigned_position == "lw":
+			if player_preferred_position == "LW":
+				chemistry = 5
+			elif player_preferred_position == "RW":
+				chemistry = 4
+			elif player_preferred_position == "ST" or player_preferred_position == "CF":
+				chemistry = 2
+			else:
+				chemistry = 0
+			assigned_position = "LW"
+		elif assigned_position == "rw":
+			if player_preferred_position == "RW":
+				chemistry = 5
+			elif player_preferred_position == "LW":
+				chemistry = 4
+			elif player_preferred_position == "ST" or player_preferred_position == "CF":
+				chemistry = 2
+			else:
+				chemistry = 0
+			assigned_position = "RW"
+		elif assigned_position == "st":
+			if player_preferred_position == "ST" or player_preferred_position == "CF":
+				chemistry = 5
+			elif player_preferred_position == "LW" or player_preferred_position == "RW":
+				chemistry = 3
+			else: 
+				chemsitry = 0
+			assigned_position = "ST"
+		else: 
+			chemistry = 0 
+
+		queried_players.append([name, assigned_position, player_preferred_position, club, league,  nation, chemistry])
+
+	for player in queried_players:
+		player_name = player[0]
+		player_club = player[3]
+		player_league = player[4]
+		player_nation = player[5]
+	
+		for other_player in queried_players:
+			other_player_name = other_player[0]
+			other_player_club = other_player[3]
+			other_player_league = other_player[4]
+			other_player_nation = other_player[5]
+			
+			if player_name != other_player_name:
+				if player_club == other_player_club:
+					player[6] += 2
+				if player_league == other_player_league:
+					player[6] += 1
+				if player_nation == other_player_nation:
+					player[6] += 1
+
+
+		if player[6] > 10:
+			player[6] = 10
+
+		team_chemistry = team_chemistry + player[6]
+
+
+	data_to_send = (queried_players, team_chemistry)
+	
+	context = dict(data = data_to_send)
+	
+	return render_template("chemistry.html", **context)	
 
 @app.route('/sortbot')
 def sortbot():
@@ -147,6 +342,8 @@ def search():
 	
 	return render_template("index.html", **context)	
 
+
+
 @app.route('/sort')
 def sort():	
 	
@@ -188,8 +385,9 @@ def sort():
 		table_data.append(row)
 	cursor.close()
 
-	#data_to_send = table_data[(page-1)*50:(page*50)+1]
 	data_to_send = table_data
+	
+	
 	
 	context = dict(data = data_to_send)
 	
